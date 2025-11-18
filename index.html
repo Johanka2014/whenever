@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whenever, Wherever - Grammar Challenge</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #1a1a2e;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        canvas {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+        
+        /* Navigation Bar */
+        #main-nav {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 100; /* Highest priority */
+            display: flex;
+            gap: 10px;
+        }
+
+        #main-nav button {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: 'Segoe UI', sans-serif;
+            font-weight: 600;
+            backdrop-filter: blur(5px);
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        #main-nav button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        #main-nav button.active {
+            background: #3498db;
+            border-color: #3498db;
+        }
+
+        /* HTML Overlay for Video Activity */
+        #video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10; /* Above canvas */
+            display: flex; /* Show by default for the start */
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+        }
+
+        .content-box {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 600px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        h2 { color: #2c3e50; margin-top: 0; }
+        
+        iframe {
+            width: 100%;
+            height: 315px;
+            border-radius: 10px;
+            border: none;
+            margin-bottom: 10px;
+        }
+        
+        .fallback-link {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .lyrics-box {
+            background: #ecf0f1;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-size: 1.3rem;
+            color: #2c3e50;
+            line-height: 2.5rem;
+        }
+
+        select {
+            border: 2px solid #3498db;
+            border-radius: 8px;
+            padding: 8px;
+            font-size: 1rem;
+            min-width: 130px;
+            text-align: center;
+            color: #2c3e50;
+            background-color: white;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: 'Segoe UI', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        select:hover {
+            border-color: #2980b9;
+            background-color: #f0f8ff;
+        }
+
+        select.correct { border-color: #2ecc71; background-color: #e8f8f5; color: #27ae60; }
+        select.wrong { border-color: #e74c3c; background-color: #fadbd8; color: #c0392b; }
+
+        .btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin: 5px;
+        }
+        .btn:hover { background-color: #2980b9; }
+        .btn-success { background-color: #27ae60; display: none; }
+        .btn-success:hover { background-color: #219150; }
+
+        #feedback-msg {
+            min-height: 20px;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        /* Hidden font loader */
+        .font-loader {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+            font-family: 'Segoe UI', sans-serif;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="font-loader">LoadFont</div>
+
+    <!-- Navigation Bar -->
+    <nav id="main-nav">
+        <button onclick="navigateTo('MENU')" id="nav-home">Home</button>
+        <button onclick="navigateTo('VIDEO')" id="nav-video">Video Activity</button>
+        <button onclick="navigateTo('PLAYING')" id="nav-game">Grammar Game</button>
+    </nav>
+
+    <!-- Video Activity Overlay -->
+    <div id="video-overlay" style="display:none;">
+        <div class="content-box">
+            <h2>Listen & Select</h2>
+            <p>Watch the video and choose the correct words for the lyrics.</p>
+            
+            <!-- Embedded YouTube Video (Lyric Version) -->
+            <iframe src="https://www.youtube.com/embed/7Dki-OJ1XJc" title="Shakira Video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            
+            <a class="fallback-link" href="https://www.youtube.com/watch?v=7Dki-OJ1XJc" target="_blank">
+                Video not loading? Click here to watch on YouTube
+            </a>
+            
+            <div class="lyrics-box">
+                "
+                <select id="gap1">
+                    <option value="" disabled selected>Select...</option>
+                    <option value="whenever">Whenever</option>
+                    <option value="wherever">Wherever</option>
+                    <option value="whatever">Whatever</option>
+                    <option value="whichever">Whichever</option>
+                </select>, 
+                <select id="gap2">
+                    <option value="" disabled selected>Select...</option>
+                    <option value="whenever">Whenever</option>
+                    <option value="wherever">Wherever</option>
+                    <option value="whatever">Whatever</option>
+                    <option value="whichever">Whichever</option>
+                </select>
+                <br>We're meant to be together..."
+            </div>
+
+            <button class="btn" onclick="checkVideoAnswers()">Check Answers</button>
+            <p id="feedback-msg"></p>
+            <button id="start-game-btn" class="btn btn-success" onclick="navigateTo('PLAYING')">Start Grammar Challenge &rarr;</button>
+        </div>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+<script>
+/**
+ * Navigation and HTML Overlay Logic
+ */
+const videoOverlay = document.getElementById('video-overlay');
+const feedbackMsg = document.getElementById('feedback-msg');
+const startGameBtn = document.getElementById('start-game-btn');
+
+// Navigation State Handler
+function navigateTo(targetState) {
+    // 1. Handle Video State Clean up
+    if (gameState === 'VIDEO' && targetState !== 'VIDEO') {
+        // Stop video by refreshing src
+        const iframe = document.querySelector('iframe');
+        iframe.src = iframe.src; 
+    }
+
+    // 2. Handle Overlay Visibility
+    if (targetState === 'VIDEO') {
+        videoOverlay.style.display = 'flex';
+    } else {
+        videoOverlay.style.display = 'none';
+    }
+
+    // 3. Update Active Nav Button Style
+    document.querySelectorAll('#main-nav button').forEach(b => b.classList.remove('active'));
+    if(targetState === 'MENU') document.getElementById('nav-home').classList.add('active');
+    if(targetState === 'VIDEO') document.getElementById('nav-video').classList.add('active');
+    if(targetState === 'PLAYING') document.getElementById('nav-game').classList.add('active');
+
+    // 4. Logic reset for Game if Game Over
+    if (targetState === 'PLAYING' && gameState === 'GAME_OVER') {
+        score = 0;
+        currentQuestionIndex = 0;
+    }
+
+    // 5. Set State
+    gameState = targetState;
+}
+
+function checkVideoAnswers() {
+    const gap1 = document.getElementById('gap1');
+    const gap2 = document.getElementById('gap2');
+    
+    const ans1 = gap1.value;
+    const ans2 = gap2.value;
+    
+    let correct = true;
+    let isComplete = true;
+
+    // Validation Logic
+    if (ans1 === "") { isComplete = false; }
+    else if (ans1 !== 'whenever') { correct = false; gap1.classList.add('wrong'); }
+    else { gap1.classList.add('correct'); gap1.classList.remove('wrong'); }
+
+    if (ans2 === "") { isComplete = false; }
+    else if (ans2 !== 'wherever') { correct = false; gap2.classList.add('wrong'); }
+    else { gap2.classList.add('correct'); gap2.classList.remove('wrong'); }
+
+    if (!isComplete) {
+        feedbackMsg.style.color = '#e67e22';
+        feedbackMsg.textContent = "Please select an option for both gaps.";
+        startGameBtn.style.display = 'none';
+        return;
+    }
+
+    if (correct) {
+        feedbackMsg.style.color = '#27ae60';
+        feedbackMsg.textContent = "Correct! You're ready for the challenge.";
+        startGameBtn.style.display = 'inline-block';
+    } else {
+        feedbackMsg.style.color = '#e74c3c';
+        feedbackMsg.textContent = "Not quite right. Listen to the chorus again!";
+        startGameBtn.style.display = 'none';
+    }
+}
+
+/**
+ * Configuration and Game State
+ */
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+// Game State: MENU, VIDEO, PLAYING, FEEDBACK, GAME_OVER
+let gameState = 'MENU'; 
+let score = 0;
+let currentQuestionIndex = 0;
+let particles = [];
+let mouse = { x: 0, y: 0, clicked: false };
+let feedbackTimer = 0;
+let lastFeedback = ''; 
+
+// Questions Data
+const questions = [
+    {
+        text: "\"_____, _____ we're meant to be together\"",
+        answer: "Whenever", 
+        hint: "Lyric: Starts the famous chorus line."
+    },
+    {
+        text: "I'll be there, and you'll be near, _____ you are.",
+        answer: "Wherever",
+        hint: "Lyric context: Implies location/distance."
+    },
+    {
+        text: "____ happens, I will always love you.",
+        answer: "Whatever",
+        hint: "Means 'no matter what occurs'."
+    },
+    {
+        text: "Select ____ option fits your schedule best.",
+        answer: "Whichever",
+        hint: "Used when choosing from a set of options."
+    },
+    {
+        text: "\"_____ I would climb the Andes solely\"",
+        answer: "Baby", 
+        overrideText: "We can go _____ you want to go.",
+        answer: "Wherever",
+        hint: "Refers to a place."
+    },
+    {
+        text: "Call me _____ you need a friend.",
+        answer: "Whenever",
+        hint: "Refers to any time."
+    },
+    {
+        text: "Eat _____ you want from the buffet.",
+        answer: "Whatever",
+        hint: "Anything that you choose."
+    },
+    {
+        text: "Take _____ road implies a shorter journey.",
+        answer: "Whichever",
+        hint: "Selection between specific paths."
+    },
+    {
+        text: "\"You'll never have to wonder, _____ we are.\"",
+        answer: "Wherever",
+        hint: "Refers to location."
+    },
+    {
+        text: "I'm happy _____ I'm with you.",
+        answer: "Whenever",
+        hint: "Every time that."
+    }
+];
+
+const options = ["Whenever", "Wherever", "Whatever", "Whichever"];
+const BUTTON_WIDTH = 200;
+const BUTTON_HEIGHT = 60;
+
+/**
+ * Initialization
+ */
+function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resize);
+resize();
+
+canvas.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    mouse.x = e.clientX - rect.left;
+    mouse.y = e.clientY - rect.top;
+});
+
+canvas.addEventListener('mousedown', () => {
+    mouse.clicked = true;
+});
+
+canvas.addEventListener('mouseup', () => {
+    mouse.clicked = false;
+});
+
+/**
+ * Particle System
+ */
+class Particle {
+    constructor() {
+        this.reset();
+    }
+    reset() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 3 + 1;
+        this.speedX = (Math.random() - 0.5) * 1;
+        this.speedY = (Math.random() - 0.5) * 1;
+        this.color = `rgba(255, 255, 255, ${Math.random() * 0.5})`;
+    }
+    update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) this.reset();
+    }
+    draw() {
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
+function initParticles() {
+    particles = [];
+    for (let i = 0; i < 100; i++) particles.push(new Particle());
+}
+initParticles();
+
+/**
+ * Helper Functions
+ */
+function isMouseOver(x, y, w, h) {
+    return mouse.x > x && mouse.x < x + w && mouse.y > y && mouse.y < y + h;
+}
+
+function drawRoundedRect(x, y, w, h, r, fill, stroke) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+    if (fill) {
+        ctx.fillStyle = fill;
+        ctx.fill();
+    }
+    if (stroke) {
+        ctx.strokeStyle = stroke;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+    }
+}
+
+function drawText(text, x, y, size, color, align = 'center') {
+    ctx.fillStyle = color;
+    ctx.font = `bold ${size}px "Segoe UI", sans-serif`;
+    ctx.textAlign = align;
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, x, y);
+}
+
+/**
+ * Game Drawing
+ */
+function drawBackground() {
+    const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    grad.addColorStop(0, '#2c3e50');
+    grad.addColorStop(1, '#3498db');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => { p.update(); p.draw(); });
+}
+
+function drawMenu() {
+    drawBackground();
+    drawText("WHENEVER, WHEREVER", canvas.width / 2, canvas.height / 3, 50, "#ffffff");
+    drawText("Grammar Practice Activity", canvas.width / 2, canvas.height / 3 + 60, 24, "#bdc3c7");
+    drawText("Song by Shakira", canvas.width / 2, canvas.height / 3 + 100, 18, "rgba(255,255,255,0.6)");
+
+    const btnW = 240, btnH = 70;
+    const btnX = canvas.width / 2 - btnW / 2, btnY = canvas.height / 2 + 50;
+    const hovering = isMouseOver(btnX, btnY, btnW, btnH);
+    
+    drawRoundedRect(btnX, btnY, btnW, btnH, 15, hovering ? '#e74c3c' : '#c0392b', '#ffffff');
+    drawText("START ACTIVITY", canvas.width / 2, btnY + btnH / 2, 24, '#ffffff');
+
+    if (hovering && mouse.clicked) {
+        navigateTo('VIDEO');
+        mouse.clicked = false;
+    }
+}
+
+function drawGame() {
+    const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+    grad.addColorStop(0, '#16213e');
+    grad.addColorStop(1, '#0f3460');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    particles.forEach(p => { p.update(); p.draw(); });
+
+    drawText(`Question ${currentQuestionIndex + 1} / ${questions.length}`, canvas.width / 2, 50, 18, "#8e9aaf");
+    drawText(`Score: ${score}`, canvas.width - 80, 50, 18, "#4cc9f0");
+
+    const q = questions[currentQuestionIndex];
+    const qBoxW = Math.min(800, canvas.width * 0.9);
+    const qBoxH = 150;
+    const qBoxX = canvas.width / 2 - qBoxW / 2;
+    const qBoxY = canvas.height / 3 - qBoxH / 2;
+
+    drawRoundedRect(qBoxX, qBoxY, qBoxW, qBoxH, 20, 'rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.2)');
+    
+    ctx.font = 'bold 32px "Segoe UI", sans-serif';
+    const words = (q.overrideText || q.text).split(' ');
+    let line = '', lines = [];
+    for(let i = 0; i < words.length; i++) {
+        let testLine = line + words[i] + ' ';
+        if (ctx.measureText(testLine).width > qBoxW - 40 && i > 0) { lines.push(line); line = words[i] + ' '; }
+        else { line = testLine; }
+    }
+    lines.push(line);
+    lines.forEach((l, i) => drawText(l, canvas.width / 2, qBoxY + qBoxH/2 - ((lines.length-1)*20) + (i * 40), 32, '#ffffff'));
+
+    const startY = qBoxY + qBoxH + 80;
+    const gridGapX = 40, gridGapY = 30;
+    const totalGridW = (BUTTON_WIDTH * 2) + gridGapX;
+    const startX = canvas.width / 2 - totalGridW / 2;
+
+    options.forEach((opt, index) => {
+        const col = index % 2;
+        const row = Math.floor(index / 2);
+        const x = startX + col * (BUTTON_WIDTH + gridGapX);
+        const y = startY + row * (BUTTON_HEIGHT + gridGapY);
+        const hovering = isMouseOver(x, y, BUTTON_WIDTH, BUTTON_HEIGHT);
+        
+        drawRoundedRect(x, y, BUTTON_WIDTH, BUTTON_HEIGHT, 10, hovering ? '#e94560' : '#1a1a2e', '#4cc9f0');
+        drawText(opt, x + BUTTON_WIDTH/2, y + BUTTON_HEIGHT/2, 20, '#ffffff');
+
+        if (hovering && mouse.clicked) {
+            mouse.clicked = false;
+            checkAnswer(opt);
+        }
+    });
+}
+
+function checkAnswer(selected) {
+    if (selected === questions[currentQuestionIndex].answer) { score++; lastFeedback = 'CORRECT'; }
+    else { lastFeedback = 'WRONG'; }
+    gameState = 'FEEDBACK';
+    feedbackTimer = 60;
+}
+
+function drawFeedback() {
+    drawGame();
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const color = lastFeedback === 'CORRECT' ? '#2ecc71' : '#e74c3c';
+    drawText(lastFeedback, canvas.width/2, canvas.height/2, 60, color);
+    if (lastFeedback === 'WRONG') drawText(`Correct answer: ${questions[currentQuestionIndex].answer}`, canvas.width/2, canvas.height/2 + 60, 24, '#ffffff');
+    drawText(questions[currentQuestionIndex].hint, canvas.width/2, canvas.height/2 + 100, 18, '#bdc3c7');
+
+    feedbackTimer--;
+    if (feedbackTimer <= 0) {
+        currentQuestionIndex++;
+        if (currentQuestionIndex >= questions.length) gameState = 'GAME_OVER';
+        else gameState = 'PLAYING';
+    }
+}
+
+function drawGameOver() {
+    drawBackground();
+    drawText("ACTIVITY COMPLETE", canvas.width/2, canvas.height/3, 50, '#ffffff');
+    drawText(`Your Score: ${score} / ${questions.length}`, canvas.width/2, canvas.height/2, 40, '#f1c40f');
+
+    const btnW = 200, btnH = 60;
+    const btnX = canvas.width/2 - btnW/2, btnY = canvas.height/2 + 100;
+    const hovering = isMouseOver(btnX, btnY, btnW, btnH);
+    drawRoundedRect(btnX, btnY, btnW, btnH, 15, hovering ? '#2ecc71' : '#27ae60', '#ffffff');
+    drawText("PLAY AGAIN", canvas.width/2, btnY + btnH/2, 24, '#ffffff');
+
+    if (hovering && mouse.clicked) {
+        score = 0;
+        currentQuestionIndex = 0;
+        gameState = 'MENU';
+        mouse.clicked = false;
+    }
+}
+
+function loop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    switch(gameState) {
+        case 'MENU': drawMenu(); break;
+        case 'VIDEO': drawBackground(); break;
+        case 'PLAYING': drawGame(); break;
+        case 'FEEDBACK': drawFeedback(); break;
+        case 'GAME_OVER': drawGameOver(); break;
+    }
+    requestAnimationFrame(loop);
+}
+
+// Set initial active button
+document.getElementById('nav-home').classList.add('active');
+loop();
+
+</script>
+</body>
+</html>
